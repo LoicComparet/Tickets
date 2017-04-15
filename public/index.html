@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12 col-md-12 main">
+            <h1 class="page-header">Dashboard</h1>
+
+            <div class="row placeholders">
+                <div class="col-xs-12 col-sm-6 placeholder">
+                    <div id="total" class="indicator">0</div>
+                    <h4>Durée totale réelle des appels effectués après le 15/02/2012 (inclus)</h4>
+                </div>
+                <div class="col-xs-12 col-sm-6 placeholder">
+                    <div id="sms" class="indicator">0</div>
+                    <h4>Quantité totale de SMS envoyés par l'ensemble des abonnés</h4>
+                </div>
+
+            </div>
+
+            <h2 class="sub-header">TOP 10 des volumes data facturés en dehors de la tranche horaire 8h00-18h00 par
+                abonné</h2>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Account</th>
+                        <th>Invoice</th>
+                        <th>Client</th>
+                        <th>Date</th>
+                        <th>Real</th>
+                        <th>Bill</th>
+                        <th>Type</th>
+                    </tr>
+                    </thead>
+                    <tbody id="top">
+                    <tr>
+                        <td colspan="8">No data</td>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+        integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $.ajaxSetup({
+            beforeSend: function () {
+                $("#sms").html("<img src='/images/loading.gif'/>");
+                $("#total").html("<img src='/images/loading.gif'/>");
+                $("#top").html("<img src='/images/loading.gif'/>");
+            }
+        });
+
+        $.ajax({
+            url: "/sms.php", async: true, success: function (response) {
+                $("#sms").html(response);
+            }
+        });
+        $.ajax({
+            url: "/total.php", async: true, success: function (response) {
+                $("#total").html(response);
+            }
+        });
+        $.ajax({
+            url: "/top.php", async: true, success: function (response) {
+                var xhtml = "";
+                try {
+                    var data = JSON.parse(response);
+                    for (var client in data) {
+                        xhtml += '<tr><td cols="7">Abonné N° ' + client + '</td></tr>';
+                        //Top 10
+                        for (var top in data[client]) {
+                            xhtml += '<tr>';
+                            for (var info in data[client][top]) {
+                                xhtml += '<td>' + data[client][top][info] + '</td>';
+                            }
+                            xhtml += '<tr>';
+                        }
+
+                    }
+                } catch (e) {
+                }
+                $("#top").html(xhtml);
+            }
+        });
+    })
+</script>
+</body>
+</html>
